@@ -5,7 +5,7 @@ Client and mock server for [Pupil labs Network API](https://docs.pupil-labs.com/
 ## Building
 
 ```
-conan install . --output-folder=build --build=missing
-cmake -S . -B ./build --preset conan-default
+conan install . --build=missing
+cmake . -B ./build --preset conan-default
 cmake --build ./build
 ```

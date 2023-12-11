@@ -1,15 +1,8 @@
-#include <argparse/argparse.hpp>
+#include <iostream>
+
+#include "zmqpp/zmqpp.hpp"
 
 int main(int argc, char *argv[]) {
-    argparse::ArgumentParser parser{"pupil_client"};
-
-    try {
-        parser.parse_args(argc, argv);
-    } catch (const std::exception &err) {
-        std::cerr << err.what() << std::endl;
-        std::cerr << parser;
-        return EXIT_FAILURE;
-    }
-
+    std::cout << "zmqpp version: " << zmqpp::version() << std::endl;
     return EXIT_SUCCESS;
 }

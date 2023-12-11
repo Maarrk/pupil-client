@@ -5,7 +5,7 @@ project(pupil_client)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-find_package(argparse REQUIRED)
+find_package(zmqpp REQUIRED)
 
 add_executable(${PROJECT_NAME} src/main.cpp)
-target_link_libraries(${PROJECT_NAME} argparse)
+target_link_libraries(${PROJECT_NAME} zmqpp::zmqpp)
