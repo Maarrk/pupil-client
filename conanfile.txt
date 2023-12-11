@@ -1,4 +1,5 @@
 [requires]
+msgpack-cxx/6.1.0
 zmqpp/4.2.0
 
 [generators]
