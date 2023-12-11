@@ -1,5 +1,7 @@
 import argparse
-from email import message
+import msgpack
+from threading import Event, Thread
+from time import sleep
 import zmq
 
 
@@ -7,35 +9,62 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-p', '--port', type=int,
                         help='TCP port to serve Pupil Remote on', default=50020)
+    parser.add_argument('-s', '--sub-port', type=int,
+                        help='TCP port to publish Pupil IPC Backbone on', default=50030)
     args = parser.parse_args()
 
     context = zmq.Context()
 
-    serve_remote(context, args.port)
+    should_stop = Event()
+
+    remote = Thread(target=serve_remote, args=(
+        context, args.port, should_stop, args.sub_port))
+    remote.start()
+
+    backbone = Thread(target=serve_backbone, args=(
+        context, args.sub_port, should_stop))
+    backbone.start()
+
+    while not should_stop.is_set():
+        try:
+            sleep(0.1)
+        except KeyboardInterrupt:
+            should_stop.set()
+
+    remote.join()
+    backbone.join()
 
 
-def serve_remote(context: zmq.Context, port: int):
+def serve_remote(context: zmq.Context, port: int, should_stop: Event, sub_port: int):
     socket = context.socket(zmq.REP)
     socket.setsockopt(zmq.RCVTIMEO, 1000)
     socket.bind(f'tcp://*:{port}')
 
-    should_stop = False
-
-    while not should_stop:
+    while not should_stop.is_set():
         try:
             command = socket.recv_string()
             print(f'req: {command}')
-            reply = handle_command(command)
+            reply = handle_command(command, sub_port)
             print(f'rep: {reply}')
             socket.send_string(reply)
 
         except zmq.error.Again:
             pass
-        except KeyboardInterrupt:
-            should_stop = True
 
 
-def handle_command(command: str) -> str:
+def serve_backbone(context: zmq.Context, port: int, should_stop: Event, interval=0.5):
+    pub_socket = context.socket(zmq.PUB)
+    pub_socket.bind(f'tcp://*:{port}')
+
+    payload = {'hello': 'world'}
+
+    while not should_stop.is_set():
+        pub_socket.send_string("custom.hello", flags=zmq.SNDMORE)
+        pub_socket.send(msgpack.dumps(payload, use_bin_type=True))
+        sleep(interval)
+
+
+def handle_command(command: str, sub_port: int) -> str:
     param = command[2:]
     param_float = None
     try:
@@ -60,6 +89,8 @@ def handle_command(command: str) -> str:
         return str(42.0)
     elif command == 'v':
         return 'get the Pupil Core software version string'
+    elif command == 'SUB_PORT':
+        return str(sub_port)
     else:
         return f'could not handle {command}'
 
