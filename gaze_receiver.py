@@ -29,5 +29,9 @@ while True:
             print(f"{key:>16} {message[key]}")
         print()
 
+        # with open('message_gaze.bin', 'wb') as out_file:
+        #     out_file.write(payload)
+        #     exit(0)
+
     elif topic.startswith('custom'):
         print(f"{topic}: {message}\n")

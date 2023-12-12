@@ -1,3 +1,6 @@
+# Binary output data
+*.bin
+
 # Created by https://www.toptal.com/developers/gitignore/api/c++,cmake,conan,python
 # Edit at https://www.toptal.com/developers/gitignore?templates=c++,cmake,conan,python
 
