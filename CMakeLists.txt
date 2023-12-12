@@ -10,15 +10,20 @@ include_directories("${LOCAL_INSTALL_PATH}/include")
 
 # ZeroMQ libraries for communication
 add_subdirectory(libzmq)
-include_directories("libzmq/include")
 
 set(ZEROMQ_INCLUDE_DIR "../libzmq/include")
 set(ZMQPP_BUILD_STATIC 1)
 set(ZMQPP_LIBZMQ_CMAKE 1)
 add_subdirectory(zmqpp)
 
+# Serialisation library for MessagePack
+include_directories("mpack/src")
+file(GLOB MPACK_SOURCE_FILES "mpack/src/mpack/*.c")
+
 if(EXISTS "${LOCAL_INSTALL_PATH}")
-    add_executable(pupil_client src/main.cpp)
+    add_executable(pupil_client
+        src/main.cpp
+        "${MPACK_SOURCE_FILES}")
     target_link_libraries(pupil_client zmqpp-static)
 else()
     message(STATUS "Build and install project at least once to get dependencies in ${LOCAL_INSTALL_PATH}")
