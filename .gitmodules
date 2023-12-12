@@ -4,3 +4,6 @@
 [submodule "zmqpp"]
 	path = zmqpp
 	url = git@github.com:zeromq/zmqpp.git
+[submodule "mpack"]
+	path = mpack
+	url = git@github.com:ludocode/mpack.git
