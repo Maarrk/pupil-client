@@ -1,0 +1,6 @@
+[submodule "libzmq"]
+	path = libzmq
+	url = git@github.com:zeromq/libzmq.git
+[submodule "zmqpp"]
+	path = zmqpp
+	url = git@github.com:zeromq/zmqpp.git
