@@ -5,6 +5,8 @@
 #include <mpack/mpack.h>
 #include <zmqpp/zmqpp.hpp>
 
+#include "pupil_data_formats.h"
+
 int main(int argc, char *argv[]) {
     std::cout << "pupil_client\n"
                  "zmqpp version: "
@@ -57,6 +59,16 @@ int main(int argc, char *argv[]) {
             std::cout << "Custom topic '" << topic
                       << "' with payload { 'hello': '" << hello_val
                       << "' }\n\n";
+        } else if (topic== std::string{"gaze.3d.01."}) {
+            GazeBinocular gaze(payload);
+
+            if (mpack_tree_error(&tree) != mpack_ok) {
+                std::cerr << "Error " << mpack_tree_error(&tree)
+                          << " when parsing binocular gaze datum";
+                continue;
+            }
+
+            std::cout << gaze << "\n\n";
         }
     }
 

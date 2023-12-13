@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.20)
 project(PupilClient)
 
+option(BUILD_TESTS "Build tests for libzmq" OFF)
+
 # install all dependencies locally, instead of system-wide
 # this means that the project will need to be built twice the first time,
 # but makes it easier to use the project without admin/root privileges
@@ -21,8 +23,10 @@ include_directories("mpack/src")
 file(GLOB MPACK_SOURCE_FILES "mpack/src/mpack/*.c")
 
 if(EXISTS "${LOCAL_INSTALL_PATH}")
+    include_directories("src")
     add_executable(pupil_client
         src/main.cpp
+        src/pupil_data_formats.cpp
         "${MPACK_SOURCE_FILES}")
     target_link_libraries(pupil_client zmqpp-static)
 else()
