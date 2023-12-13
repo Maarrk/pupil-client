@@ -1,6 +1,8 @@
 #include <cassert>
+#include <chrono>
 #include <iostream>
 #include <string>
+#include <thread>
 
 #include <mpack/mpack.h>
 #include <zmqpp/zmqpp.hpp>
@@ -35,7 +37,14 @@ int main(int argc, char *argv[]) {
 
     while (true) {
         zmqpp::message sub_msg;
-        subscriber.receive(sub_msg);
+        if (!subscriber.receive(sub_msg, true)) {
+            std::cout << ".";
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            continue;
+        } else {
+            std::cout << std::endl;
+        }
+
         assert((sub_msg.parts() == 2) && "expect topic and payload");
         std::string topic;
         sub_msg.get(topic, 0);
@@ -53,23 +62,22 @@ int main(int argc, char *argv[]) {
 
             if (mpack_tree_error(&tree) != mpack_ok) {
                 std::cerr << "Error " << mpack_tree_error(&tree)
-                          << " when parsing custom payload\n\n";
+                          << " when parsing custom payload\n";
                 continue;
             }
 
             std::cout << "Custom topic '" << topic
-                      << "' with payload { 'hello': '" << hello_val
-                      << "' }\n\n";
+                      << "' with payload { 'hello': '" << hello_val << "' }\n";
         } else if (topic == std::string{"gaze.3d.01."}) {
             GazeBinocular gaze(payload);
 
             if (mpack_tree_error(&tree) != mpack_ok) {
                 std::cerr << "Error " << mpack_tree_error(&tree)
-                          << " when parsing binocular gaze datum\n\n";
+                          << " when parsing binocular gaze datum\n";
                 continue;
             }
 
-            std::cout << gaze << "\n\n";
+            std::cout << gaze << "\n";
         }
     }
 
