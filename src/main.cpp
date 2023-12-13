@@ -31,8 +31,9 @@ int main(int argc, char *argv[]) {
     zmqpp::socket subscriber(context, zmqpp::socket_type::subscribe);
     subscriber.connect(endpoint_addr + ":" + sub_port);
     subscriber.subscribe("custom.");
+    subscriber.subscribe("gaze.");
 
-    for (size_t i = 0; i < 10; i++) {
+    while (true) {
         zmqpp::message sub_msg;
         subscriber.receive(sub_msg);
         assert((sub_msg.parts() == 2) && "expect topic and payload");
@@ -52,19 +53,19 @@ int main(int argc, char *argv[]) {
 
             if (mpack_tree_error(&tree) != mpack_ok) {
                 std::cerr << "Error " << mpack_tree_error(&tree)
-                          << " when parsing custom payload";
+                          << " when parsing custom payload\n\n";
                 continue;
             }
 
             std::cout << "Custom topic '" << topic
                       << "' with payload { 'hello': '" << hello_val
                       << "' }\n\n";
-        } else if (topic== std::string{"gaze.3d.01."}) {
+        } else if (topic == std::string{"gaze.3d.01."}) {
             GazeBinocular gaze(payload);
 
             if (mpack_tree_error(&tree) != mpack_ok) {
                 std::cerr << "Error " << mpack_tree_error(&tree)
-                          << " when parsing binocular gaze datum";
+                          << " when parsing binocular gaze datum\n\n";
                 continue;
             }
 
