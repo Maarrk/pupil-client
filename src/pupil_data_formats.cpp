@@ -25,16 +25,16 @@ GazeBinocular::GazeBinocular(mpack_node_t map) {
     timestamp = mpack_node_double(mpack_node_map_cstr(map, "timestamp"));
 
     gaze_normals = {
-        Vector3(mpack_node_array_at(mpack_node_map_cstr(map, "gaze_normals_3d"),
-                                    0)),
-        Vector3(mpack_node_array_at(mpack_node_map_cstr(map, "gaze_normals_3d"),
-                                    1)),
+        Vector3(mpack_node_map_cstr(mpack_node_map_cstr(map, "gaze_normals_3d"),
+                                    "0")),
+        Vector3(mpack_node_map_cstr(mpack_node_map_cstr(map, "gaze_normals_3d"),
+                                    "1")),
     };
     eye_centers = {
-        Vector3(
-            mpack_node_array_at(mpack_node_map_cstr(map, "eye_centers_3d"), 0)),
-        Vector3(
-            mpack_node_array_at(mpack_node_map_cstr(map, "eye_centers_3d"), 1)),
+        Vector3(mpack_node_map_cstr(mpack_node_map_cstr(map, "eye_centers_3d"),
+                                    "0")),
+        Vector3(mpack_node_map_cstr(mpack_node_map_cstr(map, "eye_centers_3d"),
+                                    "1")),
     };
 
     gaze_point = Vector3(mpack_node_map_cstr(map, "gaze_point_3d"));
