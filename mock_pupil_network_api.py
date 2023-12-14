@@ -1,7 +1,7 @@
 import argparse
 import msgpack
 from threading import Event, Thread
-from time import sleep
+from time import sleep, time
 import zmq
 
 
@@ -52,16 +52,47 @@ def serve_remote(context: zmq.Context, port: int, should_stop: Event, sub_port: 
             pass
 
 
-def serve_backbone(context: zmq.Context, port: int, should_stop: Event, interval=0.5):
+def serve_backbone(context: zmq.Context, port: int, should_stop: Event):
     pub_socket = context.socket(zmq.PUB)
     pub_socket.bind(f'tcp://*:{port}')
 
-    payload = {'hello': 'world'}
+    custom_payload = {'hello': 'world'}
+    custom_interval = 0.5
 
+    # based onhttps://docs.pupil-labs.com/core/developer/#gaze-datum-format
+    gaze_payload = {
+        # binocular gaze datum
+        'topic': 'gaze.3d.01.',
+        'confidence': 1.0,  # [0, 1]
+        'norm_pos': [0.1, 0.2],  # norm space, [0, 1]
+        'timestamp': 87915,  # time, unit: seconds
+
+        # 3D space, unit: mm
+        'gaze_normals_3d': {
+            '0': [0.1, 0.2, 0.3],
+            '1': [0.4, 0.5, 0.6],
+        },
+        'eye_centers_3d': {
+            '0': [0.7, 0.8, 0.9],
+            '1': [0.11, 0.12, 0.13],
+        },
+        'gaze_point_3d': [0.14, 0.15, 0.16],
+        'base_data': []  # list of pupil data used to calculate gaze
+    }
+    gaze_interval = 0.1
+
+    custom_next_send = 0.0
+    gaze_next_send = 0.0
     while not should_stop.is_set():
-        pub_socket.send_string("custom.hello", flags=zmq.SNDMORE)
-        pub_socket.send(msgpack.dumps(payload, use_bin_type=True))
-        sleep(interval)
+        if time() >= custom_next_send:
+            pub_socket.send_string("custom.hello", flags=zmq.SNDMORE)
+            pub_socket.send(msgpack.dumps(custom_payload, use_bin_type=True))
+            custom_next_send = time() + custom_interval
+
+        if time() >= gaze_next_send:
+            pub_socket.send_string(gaze_payload['topic'], flags=zmq.SNDMORE)
+            pub_socket.send(msgpack.dumps(gaze_payload, use_bin_type=True))
+            gaze_next_send = time() + gaze_interval
 
 
 def handle_command(command: str, sub_port: int) -> str:
